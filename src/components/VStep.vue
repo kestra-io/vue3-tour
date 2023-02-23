@@ -13,7 +13,6 @@
     <slot name="content">
       <div class="v-step__content">
         <div v-if="step.content" v-html="step.content"></div>
-        <div v-else>props is a demo step! The id of props step is {{ hash }} and it targets {{ step.target }}.</div>
       </div>
     </slot>
 
@@ -119,10 +118,10 @@ export default {
       if (props.debug) {
         console.log('[Vue Tour] The target element ' + props.step.target + ' of .v-step[id="' + hash + '"] is:', targetElement)
       }
+      createHighlight()
       if (!isSticky.value) {
         if (targetElement) {
           enableScrolling()
-          createHighlight()
 
           createPopper(
             targetElement,
@@ -167,19 +166,20 @@ export default {
     }
 
     const createHighlight = () => {
-      if (isHighlightEnabled()) {
+      const highlightElement = document.querySelector(props.step.highlightElement) ? document.querySelector(props.step.highlightElement) : targetElement;
+      if (isHighlightEnabled() && highlightElement) {
         document.body.classList.add(HIGHLIGHT.CLASSES.ACTIVE)
-        const transitionValue = window.getComputedStyle(targetElement).getPropertyValue('transition')
+        const transitionValue = window.getComputedStyle(highlightElement).getPropertyValue('transition')
 
         // Make sure our background doesn't flick on transitions
         if (transitionValue !== 'all 0s ease 0s') {
-          targetElement.style.transition = `${transitionValue}, ${HIGHLIGHT.TRANSITION}`
+          highlightElement.style.transition = `${transitionValue}, ${HIGHLIGHT.TRANSITION}`
         }
 
-        targetElement.classList.add(HIGHLIGHT.CLASSES.TARGET_HIGHLIGHTED)
+        highlightElement.classList.add(HIGHLIGHT.CLASSES.TARGET_HIGHLIGHTED)
         // The element must have a position, if it doesn't have one, add a relative position class
-        if (!targetElement.style.position) {
-          targetElement.classList.add(HIGHLIGHT.CLASSES.TARGET_RELATIVE)
+        if (!highlightElement.style.position) {
+          highlightElement.classList.add(HIGHLIGHT.CLASSES.TARGET_RELATIVE)
         }
       } else {
         document.body.classList.remove(HIGHLIGHT.CLASSES.ACTIVE)
@@ -187,14 +187,15 @@ export default {
     }
 
     const removeHighlight = () => {
-      if (isHighlightEnabled() && targetElement) {
-        const currentTransition = targetElement.style.transition
-        targetElement.classList.remove(HIGHLIGHT.CLASSES.TARGET_HIGHLIGHTED)
-        targetElement.classList.remove(HIGHLIGHT.CLASSES.TARGET_RELATIVE)
+      const highlightElement = document.querySelector(props.step.highlightElement) ? document.querySelector(props.step.highlightElement) : targetElement;
+      if (isHighlightEnabled() && highlightElement) {
+        const currentTransition = highlightElement.style.transition
+        highlightElement.classList.remove(HIGHLIGHT.CLASSES.TARGET_HIGHLIGHTED)
+        highlightElement.classList.remove(HIGHLIGHT.CLASSES.TARGET_RELATIVE)
         // Remove our transition when step is finished.
         if (currentTransition.includes(HIGHLIGHT.TRANSITION)) {
           setTimeout(() => {
-            targetElement.style.transition = currentTransition.replace(`, ${HIGHLIGHT.TRANSITION}`, '')
+            highlightElement.style.transition = currentTransition.replace(`, ${HIGHLIGHT.TRANSITION}`, '')
           }, 0)
         }
       }
